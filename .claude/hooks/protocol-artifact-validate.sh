@@ -44,13 +44,12 @@ if ! echo "$STAGED" | grep -qE '^current/DayPlan.*\.md$|^current/WeekPlan.*\.md$
   exit 0
 fi
 
-# --- DayPlan Validation ---
+# --- DayPlan Validation (выполняется только если DayPlan-файл существует) ---
 DAYPLAN=$(ls "$GOV_PATH"/current/DayPlan\ *.md 2>/dev/null | head -1)
+MISSING=()
+ERRORS=()
 
-if [ -z "$DAYPLAN" ]; then
-  echo '{}'
-  exit 0
-fi
+if [ -n "$DAYPLAN" ]; then
 
 # Required sections (parameterized — update this list when format changes).
 # Scout раздел опционален: проверяется отдельно ниже (см. блок "Scout").
@@ -62,7 +61,6 @@ SECTIONS=(
   "Итоги вчера"
 )
 
-MISSING=()
 for section in "${SECTIONS[@]}"; do
   if ! grep -q "$section" "$DAYPLAN"; then
     MISSING+=("$section")
@@ -70,7 +68,6 @@ for section in "${SECTIONS[@]}"; do
 done
 
 # Check mandatory format elements
-ERRORS=()
 
 # --- Ф3 Check 1: collapsible <details> блоки ---
 DETAILS_COUNT=$(grep -c '<details' "$DAYPLAN" 2>/dev/null || true); DETAILS_COUNT=${DETAILS_COUNT:-0}
@@ -115,6 +112,8 @@ if [ -n "$PREV_DAYPLAN" ] && [ "$PREV_DAYPLAN" != "$DAYPLAN" ]; then
     ERRORS+=("Carry-over цитата из предыдущего Day Close отсутствует (предыдущий DayPlan: $(basename "$PREV_DAYPLAN"))")
   fi
 fi
+
+fi  # endif [ -n "$DAYPLAN" ]
 
 # --- WeekPlan Validation (Ф6.1 WP-265) ---
 WEEKPLAN=$(ls "$GOV_PATH"/current/WeekPlan\ *.md 2>/dev/null | sort | tail -1)
