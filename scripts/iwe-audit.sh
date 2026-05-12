@@ -497,6 +497,67 @@ if [ $UPD_WARN -gt 0 ]; then
     OPTIONAL_MISSING=$((OPTIONAL_MISSING + UPD_WARN))
 fi
 
+# ---------- Раздел 6: Cross-platform path leaks (WP-5/WP-7 Stability-4) ----------
+#
+# Детектор: на Linux-сервере не должно быть macOS-путей `/Users/...` или
+# slug `{{CLAUDE_PROJECT_SLUG}}` в systemd-юнитах, конфигах, env-файлах.
+# Источник: 12 мая 2026, MEMORY_SRC в template-sync.sh указывал на macOS slug
+# на Linux-сервере → молчаливый WARN: Source not found каждую ночь.
+#
+# Запускается ТОЛЬКО на Linux. На macOS — пропускается (paths нормальны).
+
+echo "## 6. Cross-platform path leaks"
+echo ""
+
+OS_NAME="$(uname -s)"
+if [ "$OS_NAME" != "Linux" ]; then
+    echo "_Пропущено (этот хост — $OS_NAME, проверка релевантна только для Linux-серверов)._"
+    echo ""
+else
+    LEAK_COUNT=0
+    LEAK_LOCATIONS=""
+
+    # Места поиска (общие точки конфигурации). Шаблоны утечек — в grep ниже.
+    LEAK_TARGETS="
+/etc/systemd/system
+/etc/iwe
+$HOME/.config
+$HOME/.iwe-runtime
+$IWE_ROOT/.iwe-runtime
+$IWE_ROOT/.claude
+"
+
+    echo "| Локация | Утечек | Пример |"
+    echo "|---|---|---|"
+    for target in $LEAK_TARGETS; do
+        [ -e "$target" ] || continue
+        set +e
+        HITS=$(grep -rIl --include='*.sh' --include='*.env' --include='*.service' \
+            --include='*.timer' --include='*.json' --include='*.yaml' --include='*.yml' \
+            -e "{{HOME_DIR}}" -e "{{CLAUDE_PROJECT_SLUG}}" \
+            "$target" 2>/dev/null | head -5)
+        set -e
+        if [ -n "$HITS" ]; then
+            HITS_COUNT=$(echo "$HITS" | wc -l | tr -d ' ')
+            LEAK_COUNT=$((LEAK_COUNT + HITS_COUNT))
+            FIRST=$(echo "$HITS" | head -1)
+            printf "| \`%s\` | %s | \`%s\` |\n" "$target" "$HITS_COUNT" "$FIRST"
+            LEAK_LOCATIONS="$LEAK_LOCATIONS\n$HITS"
+        else
+            printf "| \`%s\` | 0 | — |\n" "$target"
+        fi
+    done
+    echo ""
+
+    if [ $LEAK_COUNT -gt 0 ]; then
+        echo "**Найдено $LEAK_COUNT файлов с macOS-путями.** Решение: заменить на \`\$HOME\`, \`{{HOME_DIR}}\` или \`\$IWE_ROOT\`. Возможные молчаливые сбои в скриптах."
+        OPTIONAL_MISSING=$((OPTIONAL_MISSING + 1))
+    else
+        echo "✅ macOS-путей не найдено — конфигурация корректна для Linux."
+    fi
+fi
+echo ""
+
 # ---------- Exit code ----------
 
 # 2 = критичные gaps; 1 = warnings; 0 = ОК
