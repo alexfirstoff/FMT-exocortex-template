@@ -5,6 +5,53 @@ All notable changes to FMT-exocortex-template will be documented in this file.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning: [Semantic Versioning](https://semver.org/).
 
+
+## [Unreleased] — обновлено 2026-06-02
+
+### Added
+
+- `0f45e0d` feat(communication-style): add WP-code format rule and self-check
+- `cc7c196` feat: auto-sync version badge via CI + local script
+- `03363b7` feat(0.35.3): communication-style-base + sync script + downstream markers
+- `cd1e268` feat(0.35.3): community-facing communication style
+- `ea6625e` feat(0.35.1): promote response-style rules to template (S-37 v2 + AGENTS.md)
+- `996df2a` feat(peer-skill): content-roles §1.5 + frontmatter ad_hoc_roles/discovery_turns
+- `08d6f2e` feat(hardening): stale-bot + TG alert env fallback (peer-session 2026-06-01-25) (#148)
+- `cb45d31` feat: WP-337/З Ф6 — peer-session инфраструктура в шаблоне (v0.35.0)
+- `7e9aa78` feat(triage): post-2026-06-01 backlog cleanup infrastructure
+- `dc18e90` feat(detection): MVP FMT critical/deadline issues alert (peer-session 2026-06-01-18) (#145)
+- `6be164d` feat(hindsight): WP-337/А.13 FMT template — docker-compose, start, launchd, docs
+
+### Changed
+
+- `1e3cd92` docs(dispatcher): OUTDATED comment — canonical at workspace scripts/
+- `0a15c8a` docs(skills): Ф4 WP-386 — явный Шаг 1 Extensions checks + WHY-комментарий dry-run sentinel
+- `c54ff45` ci: migrate actions/checkout@v4 → v6, github-script@v7 → v8
+- `76be56b` docs(CHANGELOG): корректировки 0.35.0 по post-deploy verify
+
+### Fixed
+
+- `fa8878d` fix(communication-style): merge rule 1a into rule 2, fix numbering
+- `190802e` fix(peer): add negative scope guard to kimi-peer-writer SKILL.md Шаг 3.1
+- `103a14f` fix(peer-writer): close-signal detector, explicit mv, Python path fix, pre-commit guard
+- `64376e3` fix(peer-writer): add 180s timeout to report synthesis subprocess
+- `f28a6da` fix(server-news): silent exit when news.enabled=false
+- `8a0a5c6` fix(create-wp): учитывать жирный шрифт **NNN** при парсинге номеров РП
+- `1ead2bc` fix: update version badge to 0.35.3
+- `46a7606` fix(scripts): remove author-specific paths from sync-communication-style template
+- `15ff497` fix(0.35.2): hotfix S-37 — A1-A11 labels in CLAUDE.md + frontmatter cleanup
+- `7e0ebd6` fix(build-runtime): remove leftover conflict markers from PR #50 merge
+- `480b277` fix: chmod +x all .sh files in build-runtime
+- `35c473f` fix(update): add .claude/scripts/ to workspace propagation
+- `f112f0d` fix: iwe-audit portability + release-audit-log.md (closes #24, #142) (#144)
+- `575ae4e` fix(notify): make TEMPLATES_DIR overridable via environment (#49)
+- `934e9c9` fix(verify): add model mapping for verification_class in wp type (#47)
+- `4a00339` fix(dt-collect): replace hardcoded DS-strategy with $GOVERNANCE_DIR (#46)
+- `065e60a` fix(day-close): portability — HOME_SLUG + rsync --delete (#119)
+- `df591ea` fix(dry-run-gate): make sentinel discovery session-agnostic (closes #59) (#60)
+- `bffd92c` fix(skill): quote pack-new description in SKILL.md frontmatter (#137)
+
+
 ## [0.35.3] — 2026-06-01
 
 ### Added
@@ -84,12 +131,6 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 
 
-
-## [Unreleased]
-
-### Added
-
-- Peer-session report template: content-roles section (§1.5) + frontmatter fields `roles`, `ad_hoc_roles`, `discovery_turns`. Synthesizer now reads `meta.yaml` to include assigned content-roles in `report.md`/`report-draft.md`.
 
 ## [0.35.0] — 2026-06-01
 
