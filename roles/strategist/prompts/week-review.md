@@ -1,13 +1,27 @@
 Выполни сценарий Week Review для роли Стратег (R1).
 
 > **Триггер:** Автоматический — Пн 00:00 (полночь Вс→Пн, launchd).
-> Записывает итоги недели в секцию WeekPlan + создаёт пост для клуба. Служит входом для session-prep (Пн 4:00).
-> **WeekReport как отдельный файл НЕ создаётся** (deprecated 2026-03-25). Итоги — секция в WeekPlan.
+> **Вход:** WeekPlan текущей недели + git-логи всех репо + MEMORY.md.
+> **Выход:** Секция «Итоги W{N}» в WeekPlan + пост для клуба (status: ready) + обновлённый MEMORY.md.
+> **WeekReport как отдельный файл НЕ создаётся** (deprecated 2026-03-25).
 
+## ВДВ-шаги
+
+| Шаг | Вход | Действие | Выход |
+|-----|------|----------|-------|
+| 1 | Git-логи за неделю | Сбор коммитов по репо, сопоставление с РП | Статусы РП (done/partial/not started) |
+| 2 | Статусы РП + коммиты | Агрегация метрик | Completion rate, активные дни, таблица по репо |
+| 3 | Метрики + WeekPlan | Синтез инсайтов + carry-over + контент-план | Секция «Итоги W{N}» в WeekPlan |
+| 4 | Секция «Итоги W{N}» | Делегирование роли Автора (R4) | Пост для клуба (status: ready) |
+| 5 | Ссылка на пост | Запись в WeekPlan | WeekPlan с ссылкой на пост |
+| 6 | MEMORY.md | Ротация уроков + таблица РП + аудит файлов | Обновлённый MEMORY.md |
+| 7 | Все изменения | Git add → commit → push | WeekPlan + MEMORY.md в remote |
 
 ## Контекст
 
-- **WeekPlan:** {{WORKSPACE_DIR}}/{{GOVERNANCE_REPO}}/current/WeekPlan W*.md
+- **WeekPlan:** `{{WORKSPACE_DIR}}/{{GOVERNANCE_REPO}}/current/WeekPlan W*.md`
+- **MEMORY:** `{{WORKSPACE_DIR}}/{{GOVERNANCE_REPO}}/memory/MEMORY.md`
+- **Post template:** `{{WORKSPACE_DIR}}/{{GOVERNANCE_REPO}}/memory/weekly-review.md` (если есть)
 
 ## Алгоритм
 
@@ -86,6 +100,8 @@ git -C {{WORKSPACE_DIR}}/<repo> log --since="last monday 00:00" --until="today 0
    Выбери лучшее название сам (в автоматическом режиме нет пользователя для выбора).
 
 
+2. Создай файл поста: `{{GOVERNANCE_REPO}}/inbox/posts/post-W{N}-YYYY-MM-DD.md`
+
 3. Frontmatter:
 
 ```yaml
@@ -149,6 +165,7 @@ content_plan: null
 3. Добавь строку:
 
 ```markdown
+- Пост W{N}: {{GOVERNANCE_REPO}}/inbox/posts/post-W{N}-YYYY-MM-DD.md (status: ready)
 ```
 
 4. Закоммить вместе с остальными изменениями
