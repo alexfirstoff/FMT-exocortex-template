@@ -69,7 +69,7 @@ if [[ "$MODE" != "settings-json" ]]; then
                 | grep -v '^\s*#\|^[0-9]*:\s*#' \
                 | grep -v '\${[^}]*:-' \
                 | grep -v '\${[^}]*:?' \
-                | grep -v 'GOV_REPO_TMPL=' \
+                | grep -vE '^[0-9]*:[[:space:]]*[A-Z_]+_TMPL=' \
                 | grep -vE "os\.environ\.get\([^)]*,[[:space:]]*[\"']" \
                 | grep -vE '^[0-9]*:\s*[A-Z_][A-Z0-9_]*="[^"]*"[[:space:]]*[\\]$' \
                 || true)
