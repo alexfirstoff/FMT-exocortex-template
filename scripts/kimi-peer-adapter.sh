@@ -272,7 +272,7 @@ echo "$OUR_PID" > "$LOCK_FILE"
 # Cleanup: удалить lock и temp при любом выходе
 cleanup_peer() {
   rm -f "$LOCK_FILE"
-  rm -rf "$TMP_ROOT" "${PROMPT_FILE}.clean"
+  rm -rf "$TMP_ROOT"
 }
 trap cleanup_peer EXIT INT TERM
 
