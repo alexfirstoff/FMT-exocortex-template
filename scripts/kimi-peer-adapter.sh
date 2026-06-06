@@ -252,7 +252,8 @@ if [ "${IWE_PEER_INLINE:-0}" = "1" ] && [ ${#FILTERED_DIRS[@]} -ge 2 ]; then
 fi
 
 # === Pidfile lock: предотвращаем параллельные/зависшие копии одной peer-сессии ===
-KIMI_TASK="$(basename "${ADD_DIRS[0]:-}" 2>/dev/null)"; [ -z "$KIMI_TASK" ] && KIMI_TASK="kimi-peer-adapter"
+KIMI_TASK="$(basename "${ADD_DIRS[0]:-}" 2>/dev/null)"
+if [ -z "$KIMI_TASK" ]; then KIMI_TASK="kimi-peer-ppid-${PPID:-$$}"; fi
 KIMI_SESSION_ID="$KIMI_TASK"
 
 LOCK_DIR="${IWE_PEER_LOCK_DIR:-/tmp/kimi-peer-locks}"
@@ -269,12 +270,17 @@ if [ -f "$LOCK_FILE" ]; then
 fi
 echo "$OUR_PID" > "$LOCK_FILE"
 
+# agent-status-report.sh (optional — guard on existence for standalone installs)
+_IWE_ARS="$HOME/IWE/scripts/agent-status-report.sh"
+
 # Cleanup: удалить lock и temp при любом выходе
 cleanup_peer() {
   rm -f "$LOCK_FILE"
+  [ -x "$_IWE_ARS" ] && bash "$_IWE_ARS" --session-id "$KIMI_SESSION_ID" kimi idle 2>/dev/null &
   rm -rf "$TMP_ROOT"
 }
 trap cleanup_peer EXIT INT TERM
+[ -x "$_IWE_ARS" ] && bash "$_IWE_ARS" --session-id "$KIMI_SESSION_ID" kimi peer-session "$KIMI_TASK" 2>/dev/null &
 
 # === Запуск Kimi с inline prompt + 5min timeout (perl alarm) ===
 if [ "${IWE_PEER_INLINE:-0}" = "1" ]; then
