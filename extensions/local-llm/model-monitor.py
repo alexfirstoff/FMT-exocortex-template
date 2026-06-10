@@ -33,11 +33,17 @@ def fetch_trending(api_url):
         return json.load(resp)
 
 
+def active_id(catalog):
+    for m in catalog.get("models", []):
+        if m.get("status") == "active":
+            return m["id"]
+    return "—"
+
+
 def digest(catalog, trending):
-    known = {c["id"] for c in catalog.get("candidates", [])}
-    active = catalog.get("active", "—")
+    known = {m["id"] for m in catalog.get("models", [])}
     fresh = [m for m in trending if m.get("id") not in known]
-    return active, known, fresh
+    return active_id(catalog), known, fresh
 
 
 def main():
@@ -52,8 +58,8 @@ def main():
         print("в каталоге нет источника hf-mlx-community — нечего опрашивать", file=sys.stderr)
         return 2
 
-    print(f"Активная модель: {catalog.get('active', '—')}")
-    print(f"В каталоге кандидатов: {len(catalog.get('candidates', []))}")
+    print(f"Активная модель: {active_id(catalog)}")
+    print(f"В каталоге моделей: {len(catalog.get('models', []))}")
     try:
         trending = fetch_trending(api)
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:

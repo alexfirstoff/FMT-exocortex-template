@@ -2,13 +2,14 @@
 # see ADR-001-local-llm-stack.md (РП404)
 # Обёртка локального LLM-стека (MLX). JOB: приватность + fallback.
 # Сервер биндится только на localhost (B7.3).
-# Команды: start | test | stop | status | pull <model> | use <model>
+# Активная модель и жизненный цикл — в каталоге через model-lifecycle.py.
+# Команды: start | test | stop | status | models | pull <m> | use <m> | archive <m>
 set -euo pipefail
 
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LLM_HOME="${IWE_LLM_HOME:-$HOME/.iwe-local-llm}"
 PY="$LLM_HOME/.venv/bin/python"
-CONFIG="$LLM_HOME/active-model"          # одна строка: id активной модели
-DEFAULT_MODEL="mlx-community/Qwen2.5-7B-Instruct-4bit"
+LIFECYCLE="$HERE/model-lifecycle.py"
 HOST="127.0.0.1"
 PORT="${IWE_LLM_PORT:-8080}"
 PIDFILE="$LLM_HOME/server.pid"
@@ -17,11 +18,16 @@ LOGFILE="$LLM_HOME/server.log"
 die() { echo "error: $*" >&2; exit 1; }
 [ -x "$PY" ] || die "venv не найден ($PY). Сначала установщик: install-local-llm.sh"
 
-# Активная модель: env > config-файл > дефолт
+# Активная модель: env переопределяет каталог
 active_model() {
   if [ -n "${IWE_LLM_MODEL:-}" ]; then echo "$IWE_LLM_MODEL"
-  elif [ -f "$CONFIG" ]; then cat "$CONFIG"
-  else echo "$DEFAULT_MODEL"; fi
+  else "$PY" "$LIFECYCLE" active; fi
+}
+
+download() {
+  local model="$1"
+  echo "скачиваю $model ..."
+  "$PY" -m mlx_lm generate --model "$model" --max-tokens 1 --prompt "ok" >/dev/null
 }
 
 start() {
@@ -64,8 +70,7 @@ stop() {
 }
 
 status() {
-  local model; model=$(active_model)
-  echo "активная модель: $model"
+  echo "активная модель: $(active_model)"
   if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
     echo "сервер: запущен (pid $(cat "$PIDFILE"), http://$HOST:$PORT)"
   else
@@ -73,31 +78,37 @@ status() {
   fi
 }
 
-# Скачать модель в кэш заранее (не делая активной)
-pull() {
-  local model="${1:?usage: pull <model-id>}"
-  echo "скачиваю $model ..."
-  "$PY" -m mlx_lm generate --model "$model" --max-tokens 1 --prompt "ok" >/dev/null
-  echo "готово: $model в кэше"
+restart_if_running() {
+  if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then stop; start; fi
 }
 
-# Поставить модель в работу: скачать (если нет) + записать активной + перезапустить сервер
+# Скачать модель для тестирования (status -> testing, если в каталоге)
+pull() {
+  local model="${1:?usage: pull <model-id>}"
+  download "$model"
+  if ! "$PY" "$LIFECYCLE" set "$model" testing; then
+    echo "(не помечена testing — модели нет в каталоге; добавь: model-lifecycle.py add $model)"
+  fi
+  echo "готово: $model скачана"
+}
+
+# Поставить модель в работу: скачать + сделать активной (прежняя active -> testing) + перезапуск
 use() {
   local model="${1:?usage: use <model-id>}"
-  pull "$model"
-  echo "$model" > "$CONFIG"
+  download "$model"
+  "$PY" "$LIFECYCLE" use "$model"
   echo "активная модель → $model"
-  if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
-    stop; start
-  fi
+  restart_if_running
 }
 
 case "${1:-}" in
-  start)  start ;;
-  test)   test_shim ;;
-  stop)   stop ;;
-  status) status ;;
-  pull)   pull "${2:-}" ;;
-  use)    use "${2:-}" ;;
-  *) die "usage: $0 start|test|stop|status|pull <model>|use <model>" ;;
+  start)   start ;;
+  test)    test_shim ;;
+  stop)    stop ;;
+  status)  status ;;
+  models)  "$PY" "$LIFECYCLE" list ;;
+  pull)    pull "${2:-}" ;;
+  use)     use "${2:-}" ;;
+  archive) "$PY" "$LIFECYCLE" archive "${2:?usage: archive <model-id>}" ;;
+  *) die "usage: $0 start|test|stop|status|models|pull <m>|use <m>|archive <m>" ;;
 esac

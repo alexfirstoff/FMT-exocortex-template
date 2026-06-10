@@ -12,7 +12,7 @@ DETECT="$HERE/detect-hardware.sh"
 LLM_HOME="${IWE_LLM_HOME:-$HOME/.iwe-local-llm}"
 VENV="$LLM_HOME/.venv"
 PY="$VENV/bin/python"
-CONFIG="$LLM_HOME/active-model"
+LIFECYCLE="$HERE/model-lifecycle.py"
 PYVER="${IWE_LLM_PYVER:-3.12}"
 
 # По умолчанию ставится рекомендованная модель (recommended: true), влезающая в память.
@@ -48,13 +48,13 @@ else
   log "окружение уже есть, пропускаю"
 fi
 
-# 3. mlx-lm (idempotent)
-if ! "$PY" -c "import mlx_lm" 2>/dev/null; then
-  log "ставлю mlx-lm"
-  if command -v uv >/dev/null 2>&1; then uv pip install --python "$PY" mlx-lm
-  else "$PY" -m pip install mlx-lm; fi
+# 3. mlx-lm + ruamel.yaml (idempotent)
+if ! "$PY" -c "import mlx_lm, ruamel.yaml" 2>/dev/null; then
+  log "ставлю mlx-lm + ruamel.yaml"
+  if command -v uv >/dev/null 2>&1; then uv pip install --python "$PY" mlx-lm "ruamel.yaml"
+  else "$PY" -m pip install mlx-lm "ruamel.yaml"; fi
 else
-  log "mlx-lm уже установлен"
+  log "зависимости уже установлены"
 fi
 
 # 4. Выбор модели под железо (venv python с pyyaml — после установки mlx-lm)
@@ -81,9 +81,9 @@ log "режим выбора: $pick_mode → модель под ${ram_gb} GB: $
 log "скачиваю модель (первый раз — несколько ГБ)"
 "$PY" -m mlx_lm generate --model "$model" --max-tokens 1 --prompt "ok" >/dev/null
 
-# 6. Записать активную модель
-echo "$model" > "$CONFIG"
-log "активная модель записана → $CONFIG"
+# 6. Сделать модель активной в каталоге (жизненный цикл, единый источник)
+"$PY" "$LIFECYCLE" use "$model"
+log "активная модель в каталоге → $model"
 
 # 7. Smoke: совместимый интерфейс на localhost
 log "проверка: запуск сервера + shim"
