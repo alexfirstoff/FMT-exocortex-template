@@ -192,7 +192,7 @@
       "path": ".claude/skills/decompose/SKILL.md"
     },
     {
-      "path": ".claude/skills/diagnose-iwe/SKILL.md"
+      "path": ".claude/skills/diagnose/SKILL.md"
     },
     {
       "path": ".claude/skills/discovery-session/SKILL.md"
@@ -961,6 +961,15 @@
     },
     {
       "path": "update.sh"
+    },
+    {
+      "path": ".claude/skills/local-llm/SKILL.md"
+    },
+    {
+      "path": "translation/en-doc-style.md"
+    },
+    {
+      "path": ".claude/skills/diagnose-iwe/SKILL.md"
     }
   ],
   "excluded_paths": [

@@ -98,3 +98,6 @@ bash "$IWE_SCRIPTS/route-task.sh" --skill lesson-close --args "<YYYY-MM-DD> [--n
 - ❌ Не пересоздавать lesson при повторном close — выйдет дубликат истории
 - ❌ Не разрешать merge-conflict автоматически — может затереть незакоммиченные ответы
 - ❌ Не «ждать ответ webhook» — он асинхронный, неблокирующий
+
+<!-- USER-SPACE -->
+<!-- /USER-SPACE -->

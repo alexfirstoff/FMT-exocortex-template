@@ -58,10 +58,28 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 
 
-## [Unreleased] — обновлено 2026-06-20
+
+
+
+
+
+
+
+
+
+
+
+
+## [Unreleased] — обновлено 2026-06-25
 
 ### Added
 
+- `58fc4ac` feat(WP-7/SP1): promote skill local-llm to platform (L1)
+- `55851f9` feat(day-open): станок самодостаточен без bootstrap (ре-промоция)
+- `affae73` feat(day-open): промоция ТВС-структуры скаффолда + дефолт IWE
+- `ae5e638` feat(translation): add translate.py pipeline + en-doc-style.md
+- `0f54175` feat(wp-432): USER-SPACE customization zones in L1 skills
+- `49443ad` feat(wp-149): promote lesson-close SKILL.md to platform (L1) — lesson/ path
 - `25056ef` feat(WP-5): iwe-bug-report executor→agent + update.sh Step 6f orphan detection
 - `1593f13` feat(WP-295): promote rule-engine.sh + generate-rules-registry.py to platform
 - `3a17360` feat(diagnose): promote diagnose-iwe v5.0 to platform (L1)
@@ -86,6 +104,9 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- `0aaa844` chore(memory): update fpf-reference.md
+- `7baebc5` refactor(diagnose): rename skill diagnose-iwe -> diagnose
+- `89c0837` chore: remove dead hook wakatime-heartbeat.sh
 - `70d540b` docs: remove PACK-MIM from CHANGELOG [protocol-close]
 - `ed2cca0` docs: add KIMI-SETUP.md — инструкция по подключению Kimi к IWE
 - `d98c62e` chore(skill-creator): bump version to 0.3.0 (sync from IWE)
@@ -96,6 +117,16 @@ Versioning: [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- `64f690c` fix(#210): add EN section alternatives to protocol-artifact-validate.sh
+- `c3df1f8` fix(#205/#203/#204): --check guard, §9 neutral stub, release automation
+- `d8c8568` fix(validate-template): skip wakatime-heartbeat.sh in orphan hook check
+- `5917dd6` fix: pathspec enforcement in 6 finalizing skills + lesson-close + skill-promote
+- `b7d1c4c` fix(diagnose): remove duplicate /diagnose trigger entries after rename
+- `ac815a0` fix(skill-promote): GNU-first stat for cross-platform permission preservation
+- `f10e03e` fix(skill-promote): cross-platform cp — copy CONTENTS, not nested dir
+- `ab0c385` fix(wp-432): repair skill-promote tests broken by L1 USER-SPACE feature
+- `ac15602` fix(diagnose-iwe): update form-089.yaml to v5.0 + add USER-SPACE marker
+- `9ac6df2` fix(naming): Решат → Ильшат во всех упоминаниях имени [no-registry-touch]
 - `7e07287` fix: update manifest to exclude auto-generated translation files
 - `de06083` fix(wp-149): sync lesson-close.sh to use lesson/ path instead of workbook/
 - `24dbd80` fix: update subscription name from Бесконечное развитие to Инженерия интеллекта in template
