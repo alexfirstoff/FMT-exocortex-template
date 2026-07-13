@@ -1,0 +1,47 @@
+budget_spread:
+  enabled: true
+  rounding: 0.5
+  threshold_h: 4
+day_open:
+  calendar_ids: []
+  interactive: false
+  self_dev_missing_alert: true
+  self_dev_slot: 1
+  strategy_day: sunday
+  week_close_day: sunday
+news:
+  enabled: false
+  max_items_per_topic: 3
+  topics:
+  - feeds: []
+    name: AI
+    query: artificial intelligence LLM agents
+  - feeds: []
+    name: Engineering
+    query: software engineering systems thinking
+pomodoro:
+  break_minutes: 5
+  long_break_minutes: 15
+  session_alert_minutes: 50
+  sessions_before_long_break: 4
+  work_minutes: 25
+video:
+  auto_transcribe:
+    enabled: false
+    engine: whisper
+    min_duration_minutes: 5
+  content:
+    suggest_posts: true
+  directories: []
+  enabled: false
+  extensions:
+  - mp4
+  - mov
+  - webm
+  - m4a
+  - mp3
+  naming_patterns:
+  - WP-{N}-*
+  - '{date}-*'
+  stale_days: 3
+  transcripts_dir: transcripts/

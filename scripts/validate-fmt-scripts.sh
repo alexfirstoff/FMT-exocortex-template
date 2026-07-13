@@ -162,6 +162,18 @@ if [[ "$MODE" != "scripts" && "$MODE" != "settings-json" ]]; then
         if [[ $skills_checked -gt 0 ]]; then
             checked=$((checked + skills_checked))
         fi
+
+        # Проверка 6: L1 SKILL.md files must carry USER-SPACE marker block
+        while IFS= read -r -d '' md_file; do
+            fname="${md_file#$FMT_ROOT/}"
+            if grep -qE '^layer:[[:space:]]*L1' "$md_file" 2>/dev/null; then
+                if ! grep -q '^<!-- USER-SPACE -->' "$md_file" 2>/dev/null; then
+                    echo "  ❌ $fname: L1 SKILL.md без маркера <!-- USER-SPACE -->" >&2
+                    echo "     → Запусти: bash \$IWE_SCRIPTS/add-skill-markers.sh" >&2
+                    errors=$((errors + 1))
+                fi
+            fi
+        done < <(find "$SKILLS_DIR" -name "SKILL.md" -print0 2>/dev/null)
     fi
 fi
 

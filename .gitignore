@@ -11,11 +11,14 @@ DS-exocortex-setup/
 .claude/checkpoint.md
 .claude/logs/
 
+# Runtime state агента (consent-sentinel'ы WP Gate, пишет create-wp.sh) — issue #250
+.claude/state/
+
 # Author-local downstream config for sync-communication-style.py (WP-388)
 scripts/sync-communication-style.yaml
 
 # Backup copies created by skill-promote.sh — local safety net, not for git
 .backups/
 
-# Бэкап памяти от day-close.sh — не коммитить в публичный шаблон
-DS-strategy/
+# macOS metadata
+.DS_Store
