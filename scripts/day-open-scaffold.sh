@@ -521,9 +521,14 @@ render_iwe_status() {
   # com.strategist.morning намеренно отключён 2026-06-13 (bug-2026-06-12-day-open-dual-writer-race.md):
   # сервер = единственный владелец Day Open. На Mac владельцем конвейера Day Open теперь
   # является com.iwe.day-open (WP-356). Проверяем его + остальные per-role агенты.
-  if command -v launchctl &>/dev/null; then
+  # Ожидаемые launchd-юниты зависят от профиля сборки. Командная сборка
+  # (DS-agent-workspace) регистрирует полный набор; личная сборка — нет.
+  # Переопределяется через IWE_EXPECTED_LAUNCHD_UNITS (пробел-разделённый список).
+  # Пусто = проверка юнитов не выполняется (нет false-positive на личной сборке).
+  local expected_units="${IWE_EXPECTED_LAUNCHD_UNITS-}"
+  if command -v launchctl &>/dev/null && [ -n "$expected_units" ]; then
     local agents_bad=""
-    for agent in com.iwe.day-open com.strategist.notereview com.pulse.daily com.aisystant.profiler.recalculate; do
+    for agent in $expected_units; do
       local line status
       line=$(launchctl list 2>/dev/null | awk -v a="$agent" '$3==a{print}')
       [ -z "$line" ] && { agents_bad="$agents_bad $agent(missing)"; continue; }
@@ -535,8 +540,10 @@ render_iwe_status() {
     else
       echo "| LaunchAgents | 🟡 |${agents_bad} |"
     fi
-  else
+  elif ! command -v launchctl &>/dev/null; then
     echo "| LaunchAgents | ⚪ | launchctl недоступен |"
+  else
+    echo "| LaunchAgents | ⚪ | не предусмотрено сборкой (IWE_EXPECTED_LAUNCHD_UNITS пусто) |"
   fi
 
   # template-sync (FMT last commit)
@@ -578,6 +585,12 @@ render_iwe_status() {
   # Mode A — cron не запущен (нет юнита, нет логов 7+ дней)
   # Mode B — cron запустился, отчёт пустой (всё чисто, жалоб нет) = норм 🟢
   # Mode C — юнит загружен, но cron ещё не сработал (grace window до 06:30) = 🟡 pending
+  # Личная сборка (expected_units пусто) не содержит iwe.scheduler/feedback-triage.
+  # Проверять их отсутствие = false-positive Mode A → пропускаем весь healthcheck.
+  if [ -z "$expected_units" ]; then
+    echo "| Scheduler/триаж | ⚪ | не предусмотрено сборкой |"
+  else
+
   local triage_file="$IWE/DS-agent-workspace/scheduler/feedback-triage/$DATE.md"
   local watchdog_log="$HOME/logs/synchronizer/feedback-watchdog-$DATE.log"
   local feedback_triage_log="$IWE/${IWE_GOVERNANCE_REPO:-DS-strategy}/logs/feedback-triage.log"
@@ -669,6 +682,7 @@ auto_generated: true
 Если решено отложить fix — поставить \`status: deferred\` и убрать \`auto_generated\` поле, чтобы скаффолд не перезаписывал контекст.
 INCEOF
     fi
+  fi
   fi
 
   # gate_log активность (Ф1 проверка)
