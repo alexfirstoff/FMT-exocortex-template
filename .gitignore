@@ -22,3 +22,6 @@ scripts/sync-communication-style.yaml
 
 # macOS metadata
 .DS_Store
+
+# Audit-логи не коммитим (issue #266)
+scripts/*.log

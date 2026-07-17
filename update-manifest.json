@@ -237,6 +237,9 @@
       "path": ".claude/skills/decompose/SKILL.md"
     },
     {
+      "path": ".claude/skills/diagnose-iwe/SKILL.md"
+    },
+    {
       "path": ".claude/skills/diagnose/SKILL.md"
     },
     {
@@ -1107,6 +1110,9 @@
       "path": "scripts/generate-catalogs.py"
     },
     {
+      "path": "scripts/generate-diagnose-iwe-skill.py"
+    },
+    {
       "path": "scripts/generate-diagnose-skill.py"
     },
     {
@@ -1346,6 +1352,7 @@
   ],
   "excluded_paths": [
     "AGENTS-agent-blocks.md",
+    "DS-strategy/exocortex",
     "docs/BROWSER-CI-TEMPLATE.md",
     "docs/developer/README.md",
     "docs/developer/card-template.md",

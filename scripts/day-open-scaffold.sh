@@ -716,10 +716,22 @@ INCEOF
   fi
 
   # Base repos (FPF/SPF/ZP) — fetch + behind count
+  # issue #268: run_bounded всегда возвращает 0 (последняя команда — rm), поэтому
+  # успех fetch по exit-коду не определить. Раньше: fetch падал/тайм-аутил →
+  # ошибка глоталась → rev-list считал behind по СТУХШЕМУ origin/main → ложные
+  # «N новых коммитов upstream» (17.07: FPF/SPF показали 7/4 при HEAD==upstream).
+  # Фикс: fetch с явной проверкой exit-кода отдельным вызовом (не через run_bounded);
+  # behind считаем ТОЛЬКО при успешном fetch, иначе «не проверено» — не число.
   for repo in FPF SPF ZP; do
     local d="$IWE/$repo"
     if [ -d "$d/.git" ]; then
-      run_bounded "${ISSUE_SWEEP_TIMEOUT:-10}" git -C "$d" fetch --quiet >/dev/null 2>&1
+      local fetch_ok
+      fetch_ok=$(run_bounded "${ISSUE_SWEEP_TIMEOUT:-10}" \
+        bash -c "git -C '$d' fetch --quiet 2>/dev/null && echo ok")
+      if [ "$fetch_ok" != "ok" ]; then
+        echo "| $repo | 🟡 | upstream не проверен (fetch не удался/тайм-аут) |"
+        continue
+      fi
       local behind
       behind=$(git -C "$d" rev-list --count HEAD..origin/main 2>/dev/null || echo 0)
       if [ "$behind" -gt 0 ]; then
