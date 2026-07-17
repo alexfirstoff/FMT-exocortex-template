@@ -82,21 +82,6 @@ find_wp_file() {
   local num="$1"
   local found=""
 
-  # issue #267: каноническая папочная карточка WP-N/WP-N.md (конвенция WP-434)
-  # должна выигрывать у плоской заглушки WP-N-*.md. Раньше archive-ветка начинала
-  # с grep -rl | head -1 → при сосуществовании файла и папки (оба содержат `wp: N`)
-  # побеждал произвольный filesystem-order матч → устаревшая заглушка (status:
-  # pending) давала ложный drift-сигнал. Фикс: в ОБЕИХ ветках сперва проверяем
-  # каноническую карточку, и только при её отсутствии падаем на grep/глоб.
-  if [[ -d "$INBOX_DIR/WP-${num}" && -f "$INBOX_DIR/WP-${num}/WP-${num}.md" ]]; then
-    echo "$INBOX_DIR/WP-${num}/WP-${num}.md"
-    return
-  fi
-  if [[ -d "$ARCHIVE_DIR/WP-${num}" && -f "$ARCHIVE_DIR/WP-${num}/WP-${num}.md" ]]; then
-    echo "$ARCHIVE_DIR/WP-${num}/WP-${num}.md"
-    return
-  fi
-
   if [[ -d "$INBOX_DIR" ]]; then
     found=$(grep -rl "^wp: ${num}$" "$INBOX_DIR" 2>/dev/null | head -1 || true)
     if [[ -z "$found" ]]; then

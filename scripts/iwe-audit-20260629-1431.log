@@ -1,0 +1,50 @@
+# IWE Installation Audit — 2026-06-29 14:31
+
+## Verdict: ⚠️ → по сути ✅ после устранения единственного реального предупреждения
+
+Критичных пробелов нет. Изначально 3 предупреждения; предупреждение №1 (dirty worktree)
+устранено в этой же сессии (коммит 36c0fbb).
+
+### 1. Inventory — ✅
+12/14 критичных L1-файлов подтверждены в реальной установке /Users/firstovaleksej/IWE/.
+2 "отсутствующих" (update.sh, .exocortex.env) — АРТЕФАКТ неверного root скрипта iwe-audit.sh
+(скрипт вычислил root как .../FMT-exocortex-template вместо корня установки). Реально присутствуют.
+
+### 2. L1 drift — ✅ (file-drift нет) / 3 governance-долга
+- 4 reference-связи: ok
+- 3 reconciliation-связи "missing" без дат: wp-status-legend-drift (R1),
+  staging-validated-to-fmt (human, >3 недель), arch-version-drift (R1)
+
+### 3. DS-strategy — ✅ (после фикса)
+git-репо работает. Изначальный dirty worktree оказался ЗАКОННОЙ работой Day Close:
+- удаление current/DayPlan 2026-06-29.md = штатная архивация (файл в archive/, подтверждено smoke-test)
+- exocortex/* = бэкап памяти
+Закоммичено и запушено: 36c0fbb (abedaee..36c0fbb). Worktree чист.
+
+### 4. MCP healthcheck — ✅ 4/4
+| Tool | Статус | Примечание |
+|------|--------|------------|
+| knowledge_search | ✅ | вернул документ |
+| github_status | ✅ | "не подключён" (валидный ответ) |
+| personal_search | ✅ | пустой массив, подписка активна |
+| dt_read_digital_twin | ✅ | backend ответил (путь не существует в двойнике) |
+
+### 5. Update prerequisites — ✅
+git/curl/python3 присутствуют. ".exocortex.env отсутствует" / "FMT отсутствует" — артефакты root.
+
+### 6. Ритуал smoke-test — ✅
+Субагент прошёл 9 из 11 шагов /run-protocol close day. Упёрся ровно на шаге 10 (git commit),
+где dry-run-gate.sh заблокировал write с диагностикой. Read-логика отработала полностью
+(сбор коммитов, DayPlan, WeekPlan, WP-REGISTRY, MEMORY, сессионные файлы). Это зелёный результат.
+Артефакт: check-index-health.py не найден (шаг 4в skip) — некритично.
+
+## Критичных gaps: нет.
+
+## Остаточные предупреждения (на Week Close)
+- staging-validated-to-fmt → промотировать если valid (skill-promote.sh / template-sync.sh)
+- arch-version-drift, wp-status-legend-drift → проставить даты или снять
+
+## Дефект инструмента (завести баг отдельно)
+- iwe-audit.sh неверно вычисляет root (смотрит внутрь FMT-exocortex-template вместо корня
+  установки) → ложные ❌ по update.sh, .exocortex.env, DS-strategy. Не блокирует работу,
+  но искажает отчёт. → /iwe-bug-report
